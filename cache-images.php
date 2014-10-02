@@ -64,11 +64,11 @@ function in_multi_array($needle, $haystack)
     }
     else
     {   
-        for($i = 0; $i < sizeof($haystack); $i++)
+        foreach ($haystack as $value)
         {
-            if(is_array($haystack[$i]))
+            if(is_array($value))
             {
-                if(in_multi_array($needle, $haystack[$i]))
+                if(in_multi_array($needle, $value))
                 {
                     $in_multi_array = true;
                     break;
@@ -334,6 +334,7 @@ function cache_images_ajax() {
 
 	if ($action == "getlist") {
 		$domain = $_POST["domain"];
+		$res = array();
 		
 		$postid_list = $wpdb->get_results("SELECT DISTINCT ID FROM $wpdb->posts WHERE post_content LIKE ('%<img%') AND post_content LIKE ('%$domain%')");
 
@@ -391,6 +392,7 @@ function cache_images_ajax() {
 		if ( !$posts ) 
 			die( __( "No posts with images were found.", "cache-images" ) );
 
+		$domains = array();
 		foreach ($posts as $post) :
 			$domains = cache_images_find_images($post->post_content, $domains);
 		endforeach;
@@ -439,7 +441,13 @@ function cache_images_find_images($content, $domains) {
 	preg_match_all('|<img.*?src=[\'"](.*?)[\'"].*?>|i', $content, $matches);
 	foreach ($matches[1] as $url) :
 		$url = parse_url($url);
-		$domains[$url['host']]++;
+		if ( isset($url['host']) ) {
+			if ( isset($domains[$url['host']]) )
+	 			$domains[$url['host']]++;
+			else
+ 				$domains[$url['host']] = 1;
+		}
+
 	endforeach;
 	
 	return $domains;
